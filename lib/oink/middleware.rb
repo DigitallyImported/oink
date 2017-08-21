@@ -19,6 +19,7 @@ module Oink
       log_routing(env)
       log_memory
       log_activerecord
+      log_extras(env)
       log_completed
       [status, headers, body]
     end
@@ -49,6 +50,17 @@ module Oink
         sorted_list.unshift("Total: #{ActiveRecord::Base.total_objects_instantiated}")
         @logger.info("Instantiation Breakdown: #{sorted_list.join(' | ')}")
         reset_objects_instantiated
+      end
+    end
+
+    def log_extras(env)
+      @logger.info(
+        "PATH_INFO: #{env['PATH_INFO']}, " \
+        "QUERY_STRING: #{env['QUERY_STRING']}, " \
+        "REQUEST_URI: #{env['REQUEST_URI']}",
+      )
+      env.select {|k,v| k.start_with? 'HTTP_'}.each do |k, v|
+        @logger.info("#{k}: #{v}")
       end
     end
 
